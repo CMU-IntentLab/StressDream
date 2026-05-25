@@ -1,0 +1,16 @@
+# Training data and generated checkpoints (not tracked)
+dubins/checkpoints/*.hdf5
+dubins/checkpoints/*.h5
+dubins/checkpoints/vae/
+dubins/checkpoints/world_model/
+
+# Explicitly track pretrained checkpoints (<50MB, safe for GitHub)
+!dubins/checkpoints/vae_final.pt
+!dubins/checkpoints/world_model_latest.pt
+dubins/logs/
+
+# Outputs
+steering_results/
+dubins/logs/
+__pycache__/
+*.pyc

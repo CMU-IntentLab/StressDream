@@ -1,0 +1,89 @@
+checkpoints:
+  vae: 'dubins/checkpoints/vae_final.pt'
+  world_model: 'dubins/checkpoints/world_model_latest.pt'
+
+data:
+  dataset_path: 'dubins/checkpoints/train_data_4000_128.hdf5'
+  sequence_length: 16
+  batch_size: 128
+  num_train_trajs: 3800
+  num_workers: 4
+
+vae:
+  in_channels: 3
+  ch: 32
+  ch_mult: [1, 2, 4, 4]
+  num_res_blocks: 1
+  attn_resolutions: []
+  dropout: 0.0
+  resolution: 128
+  z_channels: 4
+  embed_dim: 4
+  double_z: true
+
+denoiser:
+  backbone: "unet"
+  latent_dim: 4
+  action_dim: 1
+  num_steps_conditioning: 1
+  cond_dim: 128
+  hidden_dims: [32, 64, 128]
+  sigma_data: 0.5
+  sigma_offset_noise: 0.0
+
+prediction_heads:
+  hidden_dim: 256
+  num_conv_layers: 2
+  num_mlp_layers: 1
+  margin_weight: 1.0
+  done_weight: 1.0
+  obs_x: 0.0
+  obs_y: 0.0
+  obs_r: 0.25
+
+sampler:
+  num_steps_denoising: 5
+  sigma_min: 0.002
+  sigma_max: 80.0
+  rho: 7
+  order: 1
+  s_churn: 0.0
+  s_tmin: 0.0
+  s_tmax: 1000000.0
+  s_noise: 1.0
+
+sigma_distribution:
+  loc: -1.2
+  scale: 1.2
+  sigma_min: 0.002
+  sigma_max: 80.0
+
+vae_loss:
+  kl_weight: 0.000001
+
+training:
+  vae_epochs: 30
+  vae_lr: 0.0004
+  denoiser_epochs: 100
+  denoiser_lr: 0.0001
+  gradient_clip_val: 1.0
+  device: "cuda"
+  eval_every: 1
+  save_every: 1
+  log_every: 100
+  checkpoint_dir: "dubins/checkpoints"
+  log_dir: "dubins/logs"
+  remark: "dubins"
+  resume_checkpoint: null
+
+eval:
+  num_rollouts: 5
+  rollout_length: 50
+  fps: 10
+
+wandb:
+  project: "diffusion_world_model"
+  vae_run_name: "dubins_vae"
+  world_model_run_name: "dubins_wm"
+  entity: null
+  tags: ["dubins_car", "steering"]

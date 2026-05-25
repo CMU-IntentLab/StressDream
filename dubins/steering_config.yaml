@@ -1,0 +1,33 @@
+# Steering hyperparameters for Dubins car
+# CLI arguments in run_steering.py override these values.
+
+# Steering mode
+mode: pessimistic        # pessimistic (toward failure) or optimistic (toward safety)
+grad_mode: full          # full (exact backprop) or approx (latent-space proxy)
+
+# Optimization
+iters: 10
+lr: 1.0
+margin_coeff: 5.0
+grad_scale: 10.0         # gradient scale for approx mode only
+gradient_checkpointing: false
+
+# Noise regularizers
+kl_coeff: 1.0
+kl_coeff_spherical: 1.0
+std_coeff: 0.5
+spectral_coeff: 5.0
+std_permutation_coeff: 0.0
+num_perms: 100
+use_full_regularizer: true
+margin_range_coeff: 70.0
+margin_min: -1.8
+margin_max: 0.3
+normalize_noise: true
+noise_norm_threshold: 3.0
+
+# Output
+output_dir: steering_results
+fps: 10
+log_every: 5
+debug: false
