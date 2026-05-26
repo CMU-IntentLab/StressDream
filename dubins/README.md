@@ -1,45 +1,78 @@
-# Dubins Car — Diffusion WM Steering
+# StressDream / Dubins Car
 
-Steering the imagined future of a diffusion-based world model for the Dubins car environment.
+> Steering image-based 3D Dubins car world model.
 
-## Environment Setup
+---
+
+## 🛠️ Installation
 
 ```bash
-conda create -n steering_dubins python=3.10
-conda activate steering_dubins
+conda create -n stressdream-dubins python=3.10
+conda activate stressdream-dubins
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
-pip install h5py numpy matplotlib pillow tqdm imageio wandb einops ruamel.yaml
+pip install h5py numpy matplotlib pillow tqdm imageio wandb einops ruamel.yaml jupyter
 ```
 
-All scripts are run from the base directory (the parent of `dubins/`).
+All commands are run from the `StressDream/` root.
 
-## Quick Start (Pretrained Models)
+---
 
-Pretrained checkpoints are in `dubins/checkpoints/`. The default run uses
-`dubins/example_traj/` (a ground-truth failure trajectory) as the initial condition.
+## 🚀 Quick Start
+
+### Interactive notebook *(recommended)*
+
+The fastest way to explore steering is the self-contained notebook with inline visualizations:
 
 ```bash
-conda activate steering_dubins
+jupyter notebook dubins/demo.ipynb
+```
 
+### CLI
+
+Pretrained checkpoints are in `dubins/checkpoints/`. The default run uses `dubins/example_traj/` as the initial condition.
+
+```bash
 # Pessimistic: steer toward failure (default)
 python dubins/run_steering.py
 
 # Optimistic: steer toward safety
 python dubins/run_steering.py --mode optimistic
 
-# Custom initial state and actions
+# Custom initial state / actions
 python dubins/run_steering.py --init_state -1.2 -0.7 0.7 --actions ones --traj_length 30
 python dubins/run_steering.py --actions path/to/actions.npy
 ```
 
 Output: side-by-side video saved to `steering_results/steering_<mode>_<grad_mode>.mp4`.
 
-Checkpoint paths are set in `dubins/config.yaml` (`checkpoints.vae` and `checkpoints.world_model`)
-and can be overridden with `--vae_checkpoint` / `--wm_checkpoint`.
+---
 
-## Full Pipeline
+## ⚙️ Key Arguments
 
-### 1. Generate training data
+| Argument | Default | Description |
+|---|---|---|
+| `--init_state X Y THETA` | `example_traj/init_state.npy` | Initial robot state |
+| `--actions` | `example_traj/actions.npy` | `ones`, `random`, `zeros`, or path to `.npy` |
+| `--traj_length` | inferred | Number of rollout steps |
+| `--mode` | `pessimistic` | `pessimistic` or `optimistic` |
+| `--iters` | from config | Optimization iterations per step |
+| `--vae_checkpoint` | from config | Override VAE checkpoint |
+| `--wm_checkpoint` | from config | Override world model checkpoint |
+| `--output_dir` | `steering_results/` | Output directory |
+| `--seed` | `42` | Random seed |
+
+Checkpoint paths default to `dubins/config.yaml` (`checkpoints.vae` / `checkpoints.world_model`). Steering hyperparameters (regularizer coefficients, grad mode, etc.) live in `dubins/steering_config.yaml`.
+
+---
+
+## 🏗️ Full Training Pipeline
+
+<details>
+<summary>Click to expand</summary>
+
+### 1. Generate data
+
+There are pretrained checkpoints available in `dubins/checkpoints/`. If you want to train the world model from scratch, you can follow the instructions below.
 
 ```bash
 python dubins/generate_dataset.py \
@@ -48,43 +81,25 @@ python dubins/generate_dataset.py \
     --save_path dubins/checkpoints/train_data.hdf5
 ```
 
-Update `data.dataset_path` in `dubins/config.yaml` to point to the generated file.
+Update `data.dataset_path` in `dubins/config.yaml`.
 
-### 2. Train VAE + prediction heads
+### 2. Train VAE
 
 ```bash
 python dubins/train_vae.py --config dubins/config.yaml
 ```
 
-Checkpoints are saved to `dubins/checkpoints/vae/<timestamp>/`.
+Checkpoints saved to `dubins/checkpoints/vae/<timestamp>/`.
 
-### 3. Train world model (denoiser)
+### 3. Train world model
 
 ```bash
 python dubins/train_wm.py --config dubins/config.yaml \
     --vae_checkpoint dubins/checkpoints/vae/<timestamp>/vae_final.pt
 ```
 
-### 4. Run steering with trained models
+### 4. Run steering
 
-Update `checkpoints.vae` and `checkpoints.world_model` in `dubins/config.yaml`, then:
+Update `checkpoints.vae` and `checkpoints.world_model` in `dubins/config.yaml`, then run as above.
 
-```bash
-python dubins/run_steering.py --mode pessimistic
-```
-
-## Key Arguments for `run_steering.py`
-
-| Argument | Default | Description |
-|---|---|---|
-| `--init_state X Y THETA` | `example_traj/init_state.npy` | Initial robot state |
-| `--actions` | `example_traj/actions.npy` | `ones`, `random`, `zeros`, or path to `.npy` |
-| `--traj_length` | inferred from actions | Number of steps to roll out |
-| `--mode` | `pessimistic` | `pessimistic` (toward failure) or `optimistic` (toward safety) |
-| `--iters` | from `steering_config.yaml` | Optimization iterations per step |
-| `--vae_checkpoint` | from `config.yaml` | Override VAE checkpoint path |
-| `--wm_checkpoint` | from `config.yaml` | Override world model checkpoint path |
-| `--output_dir` | `steering_results/` | Where to save the output video |
-| `--seed` | `42` | Random seed |
-
-Steering hyperparameters (regularizer coefficients, grad mode, etc.) live in `dubins/steering_config.yaml`.
+</details>

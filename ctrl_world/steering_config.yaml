@@ -1,0 +1,54 @@
+# Steering hyperparameters for Ctrl-World (Qwen reward).
+# Used by run_steering.py. CLI flags override these values.
+
+task:
+  instruction: "put the coffee bag into the container without spilling"
+  qwen_prompt: "Is the coffee bean spilled? Respond with a single word: Yes or No."
+  target_success: true
+
+model:
+  task_type: replay
+  num_frames: 5
+
+# HDF5 trajectory loading (matches ctrl-world/scripts/oolong/candy_coffee.json).
+# Used only when --hdf5_path is given.
+hdf5:
+  camera_order: [0, 1, 2]   # upstream cam_id → ctrl-world slot (0=left, 1=right, 2=wrist)
+  rgb_skip: 3
+  center_crop_half: true
+  start_window: null        # null → start from the LAST interact_num windows (matches oolong)
+
+qwen:
+  model_name: Qwen/Qwen3-VL-4B-Instruct
+  num_frames: 5
+
+optim:
+  iters: 10
+  interact_num: 15
+  lr: 1.0
+  grad_scale: 100.0
+  grad_clip_per_loss: 40.0
+  grad_clamp: 0.5
+  noise_norm_threshold: 3.0
+  detach_latents: true
+  seed: 33
+
+# Regularizer flags consumed by wm_steer.regularizer.compute_regularizer_video.
+# Ctrl-World-specific defaults (from candy_coffee upstream reference).
+regularizer:
+  kl_coeff: 10.0
+  kl_coeff_spherical: 0.2
+  std_coeff: 0.1
+  spectral_coeff: 100.0
+  std_permutation_coeff: 100.0
+  gram_normalize: true
+  spectral_threshold: 0.055
+  std_perm_activation: square
+  std_perm_threshold: 0.992
+  std_perm_include_patched: false
+  num_gram_perms: 1000
+
+output:
+  save_dir: outputs/ctrl_world_steering
+  nominal_save_dir: outputs/ctrl_world_nominal
+  fps: 4

@@ -1,0 +1,57 @@
+# Steering hyperparameters for Vista (X-CLIP reward).
+# Used by run_steering.py. CLI flags override these values.
+
+model:
+  config: configs/inference/vista.yaml
+  base_ckpt: ckpts/vista.safetensors
+  n_frames: 25
+  height: 576
+  width: 1024
+  n_steps: 50
+  cfg_scale: 2.5
+  cond_aug: 0.0
+  low_vram: false
+
+vlm:
+  model_id: microsoft/xclip-base-patch32
+  frame_sampling_mode: stride3   # overlapping | random | stride3
+  num_random_starts: 4
+  default_prompts:
+    - "Distance to the front vehicle is increasing"
+    - "Distance to the front vehicle is decreasing"
+    - "Distance to the front vehicle is similar"
+  default_target_idx: 0
+
+qwen:
+  model_name: "WoWolf/Qwen2_5vl-7b-fm-tuned"
+  prompt: "The lead vehicle getting further from the view of the front camera.\n"
+  coeff: 10.0
+  num_frames: 8
+
+optim:
+  iters: 20
+  lr: 1.0
+  grad_scale: 300
+  max_grad_norm: 20
+  grad_clamp: 0.3
+  seed: 42
+
+# Regularizer flags consumed by wm_steer.regularizer.compute_regularizer_video.
+# Vista-specific defaults.
+regularizer:
+  kl_coeff: 10.0
+  kl_coeff_spherical: 0.5
+  std_coeff: 0.1
+  spectral_coeff: 100.0
+  std_permutation_coeff: 10.0
+  gram_normalize: false
+  spectral_threshold: 0.0098
+  std_perm_activation: relu_threshold
+  std_perm_threshold: 0.992
+  std_perm_include_patched: false
+  num_gram_perms: 1000
+
+output:
+  save_dir: outputs/vista_steering
+  save_freq: 1
+  fps: 12

@@ -12,5 +12,12 @@ dubins/logs/
 # Outputs
 steering_results/
 dubins/logs/
+vista/outputs/
+ctrl_world/outputs/
+wandb/
 __pycache__/
 *.pyc
+
+# Heavyweight model checkpoints (symlinked, not portable across machines)
+vista/ckpts/
+ctrl_world/ckpts/
