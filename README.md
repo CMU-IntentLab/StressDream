@@ -2,15 +2,13 @@
 <img src="media/icon.png" alt="StressDream icon" width="80"/>
 </p>
 
-# StressDream
+<h1 align="center"><strong>StressDream</strong>: Steering Video World Models<br>for Robust Policy Evaluation and Improvement</h1>
+
+> [Junwon Seo](https://junwon.me/), Sushant Veer, Ran Tian, Wenhao Ding, Apoorva Sharma, Karen Leung, Edward Schmerling, Marco Pavone, [Andrea Bajcsy](https://www.cs.cmu.edu/~abajcsy/)
+
 <p align="center">
-<strong>Steering Video World Models for Robust Policy Evaluation and Improvement</strong>
-<br><br>
-Junwon Seo, Sushant Veer, Ran Tian, Wenhao Ding, Apoorva Sharma,
-Karen Leung, Edward Schmerling, Marco Pavone, Andrea Bajcsy
-<br><br>
-<a href="https://stressdream.github.io/"><img src="https://img.shields.io/badge/Project-Page-blue?style=flat-square" alt="Project Page"/></a>
-<a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="MIT License"/></a>
+  <a href="https://stressdream.github.io/"><img src="https://img.shields.io/badge/Project-Page-blue?style=flat-square" alt="Project Page"/></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="MIT License"/></a>
 </p>
 
 ---
