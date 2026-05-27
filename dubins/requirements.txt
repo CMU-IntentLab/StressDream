@@ -1,0 +1,13 @@
+--extra-index-url https://download.pytorch.org/whl/cu118
+torch
+torchvision
+h5py
+numpy
+matplotlib
+pillow
+tqdm
+imageio[ffmpeg]
+wandb
+einops
+ruamel.yaml
+jupyter

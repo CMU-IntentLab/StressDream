@@ -8,7 +8,6 @@ import datetime
 import os
 from accelerate.logging import get_logger
 from tqdm.auto import tqdm
-import wandb
 import json
 from decord import VideoReader, cpu
 from torch.utils.data import Dataset,DataLoader

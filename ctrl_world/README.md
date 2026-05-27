@@ -11,7 +11,9 @@ conda env create -f ctrl_world/environment.yml
 conda activate stressdream-ctrlworld
 ```
 
-Python 3.11 with PyTorch ≥ 2.7, Diffusers, Transformers, and HDF5/imaging helpers.
+> Python 3.11, PyTorch 2.9.1+cu128, Diffusers 0.36, Transformers 4.57. Requires NVIDIA driver ≥ 520 (CUDA 12.8 runtime).
+
+- Requires ~20 GB VRAM for full optimization (Qwen3-VL reward + noise optimization).
 
 ---
 
@@ -26,19 +28,31 @@ Three checkpoints are required (~16.6 GB total):
 | `ckpts/clip-vit-base-patch32/` | [openai/clip-vit-base-patch32](https://huggingface.co/openai/clip-vit-base-patch32) |
 
 ```bash
-pip install -U huggingface_hub
+pip install -U huggingface_hub          # provides the new `hf` CLI
 
 mkdir -p ckpts/Ctrl-World
-huggingface-cli download junwon-seo/StressDream \
+hf download junwon-seo/StressDream \
     coffee_bag.pt --local-dir ckpts/Ctrl-World
 
-huggingface-cli download stabilityai/stable-video-diffusion-img2vid \
+hf download stabilityai/stable-video-diffusion-img2vid \
     --local-dir ckpts/stable-video-diffusion-img2vid
-huggingface-cli download openai/clip-vit-base-patch32 \
+hf download openai/clip-vit-base-patch32 \
     --local-dir ckpts/clip-vit-base-patch32
 ```
 
+> Older `huggingface-cli` is deprecated — use `hf` (shipped with recent `huggingface_hub`).
+
 Qwen3-VL-4B-Instruct (~8 GB) is fetched automatically by `transformers` on first run.
+
+<p align="center">
+  <video src="full_nominal.mp4" autoplay loop muted playsinline controls width="100%"></video>
+</p>
+<p align="center"><em>Nominal: imagination without optim.</em></p>
+
+<p align="center">
+  <video src="full_steered.mp4" autoplay loop muted playsinline controls width="100%"></video>
+</p>
+<p align="center"><em>Steered: optimized with Qwen3-VL based rewards.</em></p>
 
 ---
 
@@ -51,6 +65,14 @@ python ctrl_world/run_steering.py \
     --hdf5_path ctrl_world/example_data/traj_0001.hdf5
 ```
 
+**Nominal imagination** (no noise optimization) — compare with the steered imagination:
+
+```bash
+python ctrl_world/generate_nominal.py \
+    --hdf5_path ctrl_world/example_data/traj_0001.hdf5
+```
+
+
 Override the instruction or reward prompt:
 
 ```bash
@@ -60,18 +82,28 @@ python ctrl_world/run_steering.py \
     --qwen_prompt "Is the coffee bean spilled? Respond Yes or No."
 ```
 
+Outputs are written under `outputs/ctrl_world_nominal/<timestamp>/`.
+
 ---
 
 ## 📂 Outputs
 
-Each run writes to `outputs/ctrl_world_steering/<timestamp>/`:
+`run_steering.py` writes to `outputs/ctrl_world_steering/<timestamp>/`:
 
 | File | Description |
 |------|-------------|
-| `step_<n>_best.mp4` | Best multi-view rollout per interact step |
-| `overlay_reward.mp4` | Concatenated rollout with Qwen p(Yes) curve |
+| `step_<n>_best.mp4` | Best multi-view rollout per interact step (GT prefix + generated) |
+| `full_steered.mp4` | All steps concatenated |
 | `history.json` | Per-iteration reward, noise norm, regularizer values |
 | `optimized_noise.pt` | Final optimized noise tensor |
+
+`generate_nominal.py` writes to `outputs/ctrl_world_nominal/<timestamp>/`:
+
+| File | Description |
+|------|-------------|
+| `step_<n>_nominal.mp4` | Multi-view rollout per interact step (GT prefix + generated) |
+| `full_nominal.mp4` | All steps concatenated |
+| `history.json` | Per-step Qwen reward |
 
 ---
 
@@ -97,7 +129,8 @@ CLI flags override YAML values.
 
 ```
 ctrl_world/
-├── run_steering.py        # CLI entrypoint
+├── run_steering.py        # CLI entrypoint (steered imagination)
+├── generate_nominal.py    # CLI entrypoint (nominal baseline)
 ├── steering_config.yaml   # hyperparameters
 ├── environment.yml        # conda env
 ├── wm_helpers.py          # HDF5 loader, forward, decode helpers

@@ -20,48 +20,63 @@
 
 ---
 
-## 📦 Modules
+## Modules
 
 | Module | Domain | World Model | Reward |
 |--------|--------|-------------|--------|
-| [`dubins/`](dubins/README.md) | Synthetic Dubins car | Image-based 3D Dubins | Safety score (failure set) |
+| [`dubins/`](dubins/README.md) | Synthetic Dubins car | Image-based 3D Dubins Car | Safety score (failure set) |
 | [`vista/`](vista/README.md) | Driving | [Vista](https://github.com/OpenDriveLab/Vista) | X-CLIP (+ optional Qwen2.5-VL) |
 | [`ctrl_world/`](ctrl_world/README.md) | Robot manipulation (DROID) | [Ctrl-World](https://github.com/Robert-gyj/Ctrl-World) | Qwen3-VL |
 
 
-## 🕹️ Quick Start
+## Run StressDream
+
+All scripts are run from the `StressDream/` repo root. Each module has its own environment and detailed README.
+
+### 🚗 Dubins Car
+
+> Start with [`dubins/demo.ipynb`](dubins/demo.ipynb)
+
+See [`dubins/README.md`](dubins/README.md) for details.
 
 ```bash
-# Driving (Vista)
+conda create -n stressdream-dubins python=3.10 && conda activate stressdream-dubins
+pip install -r dubins/requirements.txt
+jupyter notebook dubins/demo.ipynb
+```
+
+CLI steering is also available:
+
+```bash
+python dubins/run_steering.py
+```
+
+### 🛣️ Vista Driving
+
+> Start with [`vista/demo.ipynb`](vista/demo.ipynb)
+
+
+See [`vista/README.md`](vista/README.md) for details.
+
+```bash
 conda env create -f vista/environment.yml
 conda activate stressdream-vista
-python vista/run_steering.py
+jupyter notebook vista/demo.ipynb
+```
 
-# Robot manipulation (Ctrl-World)
+CLI steering is also available with `python vista/run_steering.py`.
+
+### 🦾 Ctrl-World Manipulation
+
+See [`ctrl_world/README.md`](ctrl_world/README.md) for details.
+
+```bash
 conda env create -f ctrl_world/environment.yml
 conda activate stressdream-ctrlworld
 python ctrl_world/run_steering.py \
     --hdf5_path ctrl_world/example_data/traj_0001.hdf5
-
-# Dubins car — interactive notebook
-conda create -n stressdream-dubins python=3.10 && conda activate stressdream-dubins
-pip install torch torchvision h5py numpy matplotlib pillow tqdm imageio wandb einops ruamel.yaml jupyter
-jupyter notebook dubins/demo.ipynb
-
-# Dubins car — CLI
-python dubins/run_steering.py
 ```
 
-All scripts are run from the `StressDream/` repo root. See each module's README for full details.
-
-## 📁 Repository Layout
-
-```
-wm_steer/        # Shared components
-dubins/          # Image-based Dubins-car
-vista/           # Driving (Vista)
-ctrl_world/      # Robot manipulation (Ctrl-World)
-```
 
 ## ❤️ Acknowledgements
 

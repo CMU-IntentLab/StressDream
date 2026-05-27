@@ -178,7 +178,7 @@ def create_steering_video(baseline_images, opt_images_list, baseline_margins, op
     """Create [Baseline | Optimised_1 | ...] side-by-side video."""
     T, H, W, C = baseline_images.shape
     font, font_small = _get_fonts()
-    writer = imageio.get_writer(str(output_path), fps=fps, codec="libx264", bitrate="16M")
+    writer = imageio.get_writer(str(output_path), fps=fps, codec="libx264")
     for t in range(T):
         frames = [baseline_images[t]] + [r[min(t, len(r) - 1)] for r in opt_images_list]
         pil_img = Image.fromarray(np.concatenate(frames, axis=1))

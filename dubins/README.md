@@ -2,6 +2,11 @@
 
 > Steering image-based 3D Dubins car world model.
 
+<p align="center">
+  <video src="media/steering_pessimistic.mp4" autoplay loop muted playsinline width="100%"></video>
+</p>
+<p align="center"><em>Left: nominal rollout (no optimization) · Right: pessimistic steering into the failure set</em></p>
+
 ---
 
 ## 🛠️ Installation
@@ -9,8 +14,7 @@
 ```bash
 conda create -n stressdream-dubins python=3.10
 conda activate stressdream-dubins
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
-pip install h5py numpy matplotlib pillow tqdm imageio wandb einops ruamel.yaml jupyter
+pip install -r dubins/requirements.txt
 ```
 
 All commands are run from the `StressDream/` root.
@@ -32,6 +36,9 @@ jupyter notebook dubins/demo.ipynb
 Pretrained checkpoints are in `dubins/checkpoints/`. The default run uses `dubins/example_traj/` as the initial condition.
 
 ```bash
+# Nominal baseline: 5 random rollouts without optimization
+python dubins/generate_nominal.py
+
 # Pessimistic: steer toward failure (default)
 python dubins/run_steering.py
 
@@ -43,7 +50,7 @@ python dubins/run_steering.py --init_state -1.2 -0.7 0.7 --actions ones --traj_l
 python dubins/run_steering.py --actions path/to/actions.npy
 ```
 
-Output: side-by-side video saved to `steering_results/steering_<mode>_<grad_mode>.mp4`.
+Outputs are written to `steering_results/`: `steering_<mode>.mp4` (steered) and `nominal.mp4` (unoptimized samples).
 
 ---
 

@@ -72,6 +72,7 @@ def load_hdf5_trajectory(
     Returns:
         eef_states:    np.ndarray (N, 7)   — 7-dim end-effector states per skipped frame
         video_latents: list of 3 tensors, each (N, 4, H_lat, W_lat) on `device`
+        video_rgb:     list of 3 arrays,   each (N, H, W, 3) uint8 BGR — for GT prefix in output videos
 
     `camera_order[i]` is the upstream camera_id mapped into ctrl-world slot i
     (0=left, 1=right, 2=wrist). Slot 2 (wrist) skips `_crop_center_half`.
@@ -93,6 +94,7 @@ def load_hdf5_trajectory(
         )
 
         video_latents = []
+        video_rgb = []  # (N, H, W, 3) uint8 RGB per view, kept for GT prefix in output videos
         for view_id, cam_id in enumerate(camera_order):
             cam_key = f"camera_{cam_id}"
             frames = []
@@ -104,6 +106,7 @@ def load_hdf5_trajectory(
                 img = cv2.resize(bgr, (TARGET_WIDTH, TARGET_HEIGHT), interpolation=cv2.INTER_AREA)
                 frames.append(img)
             video_np = np.stack(frames, axis=0)  # (N, H, W, 3) uint8 (BGR)
+            video_rgb.append(video_np.copy())  # BGR, same channel order as VAE-decoded frames
 
             x = torch.from_numpy(video_np).to(dtype).to(device)
             x = x.permute(0, 3, 1, 2) / 255.0 * 2 - 1   # (N, 3, H, W) in [-1, 1]
@@ -117,7 +120,7 @@ def load_hdf5_trajectory(
                 latents = torch.cat(lats, dim=0).to(device=device, dtype=dtype)
             video_latents.append(latents)
 
-    return eef_states, video_latents
+    return eef_states, video_latents, video_rgb
 
 
 def normalize_bound(data, data_min, data_max, clip_min=-1, clip_max=1, eps=1e-8):

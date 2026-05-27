@@ -5,17 +5,17 @@ Single-image X-CLIP (+ optional Qwen2.5-VL) noise steering for Vista.
 Usage:
     # X-CLIP only (default prompts from steering_config.yaml)
     python vista/run_steering.py \
-        --image_path vista/example_images/truck_merge.jpg
+        --image_path vista/example_images/truck.jpg
 
     # Override prompts and target index
     python vista/run_steering.py \
-        --image_path vista/example_images/truck_merge.jpg \
+        --image_path vista/example_images/truck.jpg \
         --prompts "a truck blocks the road,a clear road ahead" \
         --target_idx 0
 
     # Add optional Qwen2.5-VL reward on top of X-CLIP
     python vista/run_steering.py \
-        --image_path vista/example_images/truck_merge.jpg \
+        --image_path vista/example_images/truck.jpg \
         --use_qwen
 
 Outputs (under steering_config.yaml `output.save_dir`):
@@ -75,14 +75,14 @@ from wm_steer.regularizer import compute_regularizer_video
 # CLI
 # ---------------------------------------------------------------------------
 
-DEFAULT_IMAGE_PATH = os.path.join(SCRIPT_DIR, "example_images", "truck_merge.jpg")
+DEFAULT_IMAGE_PATH = os.path.join(SCRIPT_DIR, "example_images", "truck.jpg")
 
 
 def parse_args():
     p = argparse.ArgumentParser(description="Single-image X-CLIP noise steering for Vista")
     p.add_argument("--image_path", default=DEFAULT_IMAGE_PATH,
                    help="Path to a single conditioning image. "
-                        "Default: vista/example_images/truck_merge.jpg")
+                        "Default: vista/example_images/truck.jpg")
     p.add_argument("--prompts", default=None,
                    help="Comma-separated prompt list or JSON file. "
                         "Default: prompts from steering_config.yaml (vlm.default_prompts)")
@@ -116,6 +116,8 @@ def parse_args():
     p.add_argument("--save_dir", default=None)
     p.add_argument("--seed", type=int, default=None)
     p.add_argument("--low_vram", action="store_true", default=None)
+    p.add_argument("--no_regularizer", action="store_true", default=False,
+                   help="Zero out all regularizer coefficients (ablation: pure reward gradient only).")
     return p.parse_args()
 
 
@@ -267,6 +269,11 @@ def main():
 
     def denoiser_fn(x, sigma, c, cmask):
         return model.denoiser(model.model, x, sigma, c, cmask)
+
+    if args.no_regularizer:
+        logging.info("--no_regularizer: all regularizer coefficients set to zero.")
+        from omegaconf import OmegaConf as _OC
+        cfg.regularizer = _OC.create({k: 0.0 for k in cfg.regularizer})
 
     history = []
     reg_cfg = cfg.regularizer

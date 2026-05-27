@@ -49,7 +49,7 @@ def _preprocess_frames_torch(frames_tchw, processor, device):
         raise AttributeError("Processor has neither image_processor nor feature_extractor.")
 
     size_cfg = getattr(img_proc, "size", 224)
-    if isinstance(size_cfg, dict):
+    if hasattr(size_cfg, "get"):   # dict or transformers SizeDict
         shortest_edge = size_cfg.get("shortest_edge", size_cfg.get("height", 224))
     else:
         shortest_edge = int(size_cfg)
@@ -57,7 +57,7 @@ def _preprocess_frames_torch(frames_tchw, processor, device):
     crop_cfg = getattr(img_proc, "crop_size", None)
     if crop_cfg is None:
         crop_h = crop_w = shortest_edge
-    elif isinstance(crop_cfg, dict):
+    elif hasattr(crop_cfg, "get"):   # dict or transformers SizeDict
         crop_h = crop_cfg.get("height", shortest_edge)
         crop_w = crop_cfg.get("width", shortest_edge)
     else:

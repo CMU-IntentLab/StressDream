@@ -67,7 +67,7 @@ from rewards import (
     QWEN_ZERO_SHOT_PROMPT_MULTI_VIEW,
 )
 from wm_steer.regularizer import compute_regularizer_video
-from visualize import pixels_to_uint8_views, save_overlay_video
+from visualize import pixels_to_uint8_views
 
 
 # ---------------------------------------------------------------------------
@@ -232,7 +232,7 @@ def main():
 
         logging.info("Loading full HDF5 trajectory: %s (cams=%s, rgb_skip=%d, crop_half=%s)",
                      args.hdf5_path, camera_order, rgb_skip, center_crop_half)
-        eef_gt, video_latents = load_hdf5_trajectory(
+        eef_gt, video_latents, video_rgb = load_hdf5_trajectory(
             args.hdf5_path, vae=vae, device=device, dtype=dtype,
             camera_order=camera_order, rgb_skip=rgb_skip,
             center_crop_half=center_crop_half,
@@ -265,6 +265,7 @@ def main():
             view_latents, target_height_total=72, target_w=40, device=device,
         )
         eef_gt = None
+        video_rgb = None
         start_window = 0
         initial_eef = np.zeros((1, action_dim), dtype=np.float32)
 
@@ -275,11 +276,7 @@ def main():
     # ── Outer interact loop ────────────────────────────────────────────
     reg_cfg = cfg.regularizer
     history = []
-
-    # Containers for overlay video construction
-    all_view_frames = [[] for _ in range(3)]   # each element: list of (num_frames, H, W, 3)
-    step_p_yes_values = []                      # best p_yes per step (for reward curve)
-
+    all_view_frames = [[] for _ in range(3)]
     last_noise = None  # will hold noise from the last step for saving
 
     for step in range(1, interact_num + 1):
@@ -447,17 +444,22 @@ def main():
                 )
                 step_best_pixels_cpu = bp.cpu()
 
-            view_arrays = pixels_to_uint8_views(step_best_pixels_cpu.numpy(), num_views=3)
+            view_arrays = pixels_to_uint8_views(step_best_pixels_cpu.float().numpy(), num_views=3)
             step_cat = np.concatenate(view_arrays, axis=-2)  # (T, H, 3*W, 3)
+            # Prepend GT frames [init_frame, sid) so each video shows the full trajectory so far
+            if video_rgb is not None:
+                step_sid = int((start_window + step - 1) * (pred_step - 1))
+                if step_sid > init_frame:
+                    gt_prefix = np.concatenate(
+                        [video_rgb[vi][init_frame:step_sid] for vi in range(3)], axis=-2
+                    )  # (prefix_T, H, 3*W, 3)
+                    step_cat = np.concatenate([gt_prefix, step_cat], axis=0)
             step_vpath = os.path.join(run_dir, f"step_{step:04d}_best.mp4")
             imageio.mimwrite(step_vpath, step_cat, fps=cfg.output.fps, codec="libx264")
             logging.info("Step %d best video → %s (reward=%.4f)", step, step_vpath, best_step_reward)
 
-            # Accumulate frames per view for overlay video
             for vi in range(3):
-                all_view_frames[vi].append(view_arrays[vi])  # (num_frames, H, W, 3)
-
-        step_p_yes_values.append(best_step_p_yes)
+                all_view_frames[vi].append(view_arrays[vi])
 
         history.append({
             "step": step,
@@ -485,33 +487,15 @@ def main():
         del best_latents
         torch.cuda.empty_cache()
 
-    # ── Overlay reward video ───────────────────────────────────────────
-    if any(len(frames) > 0 for frames in all_view_frames):
-        # Concatenate all steps along time axis
-        concat_view_frames = []
-        for vi in range(3):
-            if all_view_frames[vi]:
-                concat_view_frames.append(np.concatenate(all_view_frames[vi], axis=0))
-            else:
-                concat_view_frames.append(np.zeros((0,), dtype=np.uint8))
-
-        total_T = concat_view_frames[0].shape[0]
-        # Build step-function reward curve: each step's best p_yes repeated num_frames times
-        p_yes_curve = []
-        for p_yes in step_p_yes_values:
-            p_yes_curve.extend([p_yes] * num_frames)
-        # Trim or pad to total_T
-        p_yes_curve = p_yes_curve[:total_T]
-
-        reward_curves = {"Qwen p(Yes)": p_yes_curve}
-        overlay_path = os.path.join(run_dir, "overlay_reward.mp4")
-        save_overlay_video(
-            concat_view_frames,
-            [reward_curves] * 3,
-            instruction,
-            overlay_path,
-            fps=cfg.output.fps,
-        )
+    # ── Full concatenated video (all steps, no graph) ─────────────────
+    if any(len(f) > 0 for f in all_view_frames):
+        all_frames = np.concatenate(
+            [np.concatenate(all_view_frames[vi], axis=0) for vi in range(3)],
+            axis=-2,
+        )  # (total_T, H, 3*W, 3)
+        full_vpath = os.path.join(run_dir, "full_steered.mp4")
+        imageio.mimwrite(full_vpath, all_frames, fps=cfg.output.fps, codec="libx264")
+        logging.info("Full video → %s", full_vpath)
 
     # ── Save outputs ───────────────────────────────────────────────────
     with open(os.path.join(run_dir, "history.json"), "w") as f:

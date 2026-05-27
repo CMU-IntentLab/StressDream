@@ -23,8 +23,8 @@ qwen:
   num_frames: 5
 
 optim:
-  iters: 10
-  interact_num: 15
+  iters: 5
+  interact_num: 20
   lr: 1.0
   grad_scale: 100.0
   grad_clip_per_loss: 40.0

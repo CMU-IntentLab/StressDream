@@ -138,7 +138,9 @@ def compute_qwen_reward(
 
     img_proc = qwen_processor.image_processor
     patch_size = img_proc.patch_size
-    image_grid_thw = inputs.get("image_grid_thw") or inputs.get("video_grid_thw")
+    image_grid_thw = inputs.get("image_grid_thw")
+    if image_grid_thw is None:
+        image_grid_thw = inputs.get("video_grid_thw")
     if image_grid_thw is None:
         raise RuntimeError("Processor returned neither image_grid_thw nor video_grid_thw")
 
@@ -247,7 +249,9 @@ def compute_qwen_reward_multi_view(
 
     img_proc = qwen_processor.image_processor
     patch_size = img_proc.patch_size
-    image_grid_thw = inputs.get("image_grid_thw") or inputs.get("video_grid_thw")
+    image_grid_thw = inputs.get("image_grid_thw")
+    if image_grid_thw is None:
+        image_grid_thw = inputs.get("video_grid_thw")
     if image_grid_thw is None:
         raise RuntimeError("Processor returned neither image_grid_thw nor video_grid_thw")
 

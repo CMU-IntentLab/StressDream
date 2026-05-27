@@ -1,16 +1,16 @@
 name: stressdream-vista
 channels:
-  - pytorch
-  - nvidia
   - conda-forge
   - defaults
 dependencies:
   - python=3.10
-  - pytorch=2.0.1
-  - torchvision=0.15.2
-  - pytorch-cuda=11.8
   - pip
   - pip:
+    - --extra-index-url https://download.pytorch.org/whl/cu128
+    # PyTorch — cu128 wheels are compatible with driver 520+ (CUDA 12.8 runtime)
+    - torch==2.9.1+cu128
+    - torchvision==0.24.1+cu128
+    - xformers==0.0.33.post2
     - transformers>=4.19.1
     - open-clip-torch>=2.20.0
     - omegaconf
@@ -22,12 +22,10 @@ dependencies:
     - timm
     - opencv-python
     - pillow
-    - imageio
-    - imageio-ffmpeg
+    - "imageio[ffmpeg]"
     - matplotlib
     - numpy
     - pyyaml
     - scipy
     - tqdm
-    - xformers
     - clip @ git+https://github.com/openai/CLIP.git

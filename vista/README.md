@@ -11,8 +11,8 @@ conda env create -f vista/environment.yml
 conda activate stressdream-vista
 ```
 
-- Python 3.10 with PyTorch and Vista dependencies (`omegaconf`, `pytorch-lightning`, `transformers`, etc.).
-- Requires ~80GB of VRAM for running the full optimization (with Qwen2.5-VL reward), and ~40GB of VRAM for sampling without the optimization.
+- Python 3.10, PyTorch 2.9.1+cu128, xformers 0.0.33. Requires NVIDIA driver ≥ 520 (CUDA 12.8 runtime).
+- Requires ~48 GB VRAM for optimization (~80 GB VRAM for full optimization  with Qwen2.5-VL reward), ~40 GB for sampling only.
 
 ---
 
@@ -30,11 +30,25 @@ wget -O vista/ckpts/vista.safetensors \
 
 The X-CLIP reward (`microsoft/xclip-base-patch32`, ~400 MB) and optional Qwen2.5-VL are fetched automatically by `transformers` on first run.
 
+<p align="center">
+  <video src="media/nominal.mp4" autoplay loop muted playsinline width="49%"></video>
+  <video src="media/steered.mp4" autoplay loop muted playsinline width="49%"></video>
+</p>
+<p align="center"><em>Left: before steering (nominal generation) · Right: after steering toward <code>Distance to the front vehicle is increasing</code></em></p>
+
 ---
 
 ## 🚀 Demo
 
-A sample driving image (`example_images/truck_merge.jpg`) and default X-CLIP prompts are bundled. Run from the `StressDream/` root:
+The fastest way to explore steering is the notebook (runs optimization and displays results inline):
+
+```bash
+jupyter notebook vista/demo.ipynb
+```
+
+Or use the CLI directly. A sample driving image (`example_images/truck.jpg`) and default X-CLIP prompts are bundled. Run from the `StressDream/` root:
+
+> **Timing:** a single Vista generation takes ~1–2 min on an H100. With 20 iterations the full optimization run takes ~30–40 min.
 
 ```bash
 python vista/run_steering.py
@@ -56,6 +70,12 @@ python vista/run_steering.py --trajectory_json path/to/traj.json
 ```
 
 `traj.json` is a flat list of `{"x": float, "y": float}` waypoints; the first two are treated as origin/calibration and skipped.
+
+**No-regularizer ablation** (pure reward gradient, no typical-set constraint — for comparison)
+
+```bash
+python vista/run_steering.py --no_regularizer
+```
 
 **Qwen2.5-VL reward** (optional)
 
@@ -99,12 +119,13 @@ CLI flags override YAML values.
 ```
 vista/
 ├── run_steering.py        # CLI entrypoint
+├── demo.ipynb             # interactive notebook
 ├── steering_config.yaml   # hyperparameters
 ├── environment.yml        # conda env
 ├── wm_helpers.py          # Vista model, sampler, conditioning helpers
 ├── rewards.py             # X-CLIP + Qwen2.5-VL reward
 ├── vwm/                   # Vista core model package
 ├── configs/inference/vista.yaml
-├── example_images/        # bundled truck_merge.jpg
+├── example_images/        # bundled truck.jpg
 └── ckpts/                 # vista.safetensors
 ```
