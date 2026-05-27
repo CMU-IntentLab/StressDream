@@ -31,8 +31,8 @@ wget -O vista/ckpts/vista.safetensors \
 The X-CLIP reward (`microsoft/xclip-base-patch32`, ~400 MB) and optional Qwen2.5-VL are fetched automatically by `transformers` on first run.
 
 <p align="center">
-  <video src="media/nominal.mp4" autoplay loop muted playsinline width="49%"></video>
-  <video src="media/steered.mp4" autoplay loop muted playsinline width="49%"></video>
+  <img src="media/nominal.gif" width="49%">
+  <img src="media/steered.gif" width="49%">
 </p>
 <p align="center"><em>Left: before steering (nominal generation) · Right: after steering toward <code>Distance to the front vehicle is increasing</code></em></p>
 

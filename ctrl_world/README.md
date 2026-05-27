@@ -45,14 +45,10 @@ hf download openai/clip-vit-base-patch32 \
 Qwen3-VL-4B-Instruct (~8 GB) is fetched automatically by `transformers` on first run.
 
 <p align="center">
-  <video src="full_nominal.mp4" autoplay loop muted playsinline controls width="100%"></video>
+  <img src="media/full_nominal.gif" width="49%">
+  <img src="media/full_steered.gif" width="49%">
 </p>
-<p align="center"><em>Nominal: imagination without optim.</em></p>
-
-<p align="center">
-  <video src="full_steered.mp4" autoplay loop muted playsinline controls width="100%"></video>
-</p>
-<p align="center"><em>Steered: optimized with Qwen3-VL based rewards.</em></p>
+<p align="center"><em>Left: nominal (random noise) · Right: steered (Qwen3-VL reward)</em></p>
 
 ---
 

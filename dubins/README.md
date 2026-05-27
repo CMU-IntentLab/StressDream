@@ -3,7 +3,7 @@
 > Steering image-based 3D Dubins car world model.
 
 <p align="center">
-  <video src="media/steering_pessimistic.mp4" autoplay loop muted playsinline width="100%"></video>
+  <img src="media/steering_pessimistic.gif" width="100%">
 </p>
 <p align="center"><em>Left: nominal rollout (no optimization) · Right: pessimistic steering into the failure set</em></p>
 
