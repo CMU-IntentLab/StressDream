@@ -45,10 +45,13 @@ hf download openai/clip-vit-base-patch32 \
 Qwen3-VL-4B-Instruct (~8 GB) is fetched automatically by `transformers` on first run.
 
 <p align="center">
-  <img src="media/full_nominal.gif" width="49%">
-  <img src="media/full_steered.gif" width="49%">
+  <img src="media/full_nominal.gif" width="80%"><br>
+  <em>Nominal (random noise)</em>
 </p>
-<p align="center"><em>Left: nominal (random noise) · Right: steered (Qwen3-VL reward)</em></p>
+<p align="center">
+  <img src="media/full_steered.gif" width="80%"><br>
+  <em>Steered (Qwen3-VL reward)</em>
+</p>
 
 ---
 
